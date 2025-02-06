@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "nextjs-project"
+        CONTAINER_NAME = "nextjs-container"
+        PORT = "3000"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/username/nextjs-project.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t $DOCKER_IMAGE ."
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh "docker stop $CONTAINER_NAME || true"
+                sh "docker rm $CONTAINER_NAME || true"
+                sh "docker run -d --name $CONTAINER_NAME -p $PORT:3000 $DOCKER_IMAGE"
+            }
+        }
+    }
+}
