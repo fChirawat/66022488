@@ -1,31 +1,25 @@
 pipeline {
     agent any
-
-    environment {
-        DOCKER_IMAGE = "nextjs-project"
-        CONTAINER_NAME = "nextjs-container"
-        PORT = "3000"
-    }
-
-    stages {
-        stage('Clone Repository') {
+    stages {      
+        stage("Copy file to Docker server"){
             steps {
-                git branch: 'main', url: 'https://github.com/fChirawat/quiz_git.git'
+				//แก้ตรง 66022488 ให้เป็นชื่อเดียวกับ pipeline job/item ที่สร้างใน jenkins
+                sh "scp -r /var/lib/jenkins/workspace/66022488/* root@13.212.94.247:~/66022488"
             }
         }
-
-        stage('Build Docker Image') {
+        
+        stage("Build Docker Image") {
             steps {
-                sh "docker build -t $DOCKER_IMAGE ."
-            }
-        }
-
-        stage('Run Docker Container') {
+                //path yaml files
+				ansiblePlaybook playbook: '/var/lib/jenkins/workspace/66022488/playbooks/build.yaml'
+            }    
+        } 
+        
+        stage("Create Docker Container") {
             steps {
-                sh "docker stop $CONTAINER_NAME || true"
-                sh "docker rm $CONTAINER_NAME || true"
-                sh "docker run -d --name $CONTAINER_NAME -p $PORT:3000 $DOCKER_IMAGE"
-            }
-        }
+                //path yaml files
+				ansiblePlaybook playbook: '/var/lib/jenkins/workspace/66022488/playbooks/deploy.yaml'
+            }    
+        } 
     }
 }
